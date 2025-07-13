@@ -25,30 +25,23 @@ sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
 sudo apt install -y python3.12 python3.12-venv python3-pip
 
-# Install Go
-wget https://go.dev/dl/go1.23.9.linux-amd64.tar.gz
-sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.23.9.linux-amd64.tar.gz
-echo "export PATH=\$PATH:/usr/local/go/bin" >> ~/.bashrc
-source ~/.bashrc
-clear
-
-# Download Safrochaind Binary
-git clone https://github.com/Safrochain-Org/safrochain-node.git
-cd safrochain-node
-make install
-sudo cp ~/go/bin/safrochaind /usr/local/bin/
-clear
+# Download Binary
+wget https://github.com/xos-labs/node/releases/download/v0.5.2/node_0.5.2_Linux_amd64.tar.gz
+tar -xzf node_0.5.2_Linux_amd64.tar.gz
+cp bin/xosd /usr/local/bin/
+chmod +x /usr/local/bin/xosd
+xosd version
 
 # Setting Node
-read -p "Input your Moniker" SAFRO_MONIKER
-read -p "Input your Port" SAFRO_PORT
+read -p "Input your Moniker" XOS_MONIKER
+read -p "Input your Port" XOS_PORT
 
 # Install Node
-safrochaind init $SAFRO_MONIKER --chain-id safro-testnet-1
+xosd init $XOS_MONIKER --chain-id xos_1267-1
 
 # Download Genesis
-FILEID=1nSPXDq4vsH4D5NI5e1rUpgbR8-kl_M0Z
-FILENAME=$HOME/.safrochain/config/genesis.json
+FILEID=1SHdCHf8fQFptV8zGJmvNs4otGx0eBkht
+FILENAME=$HOME/.xosd/config/genesis.json
 CONFIRM=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate \
 "https://docs.google.com/uc?export=download&id=$FILEID" -O- | \
 sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1/p')
@@ -58,8 +51,8 @@ wget --load-cookies /tmp/cookies.txt \
 rm -f /tmp/cookies.txt
 
 # Download Addrbook
-FILEID=1dUBQ2XGOUhrZK3Xjf20KrgZprbZpaChq
-FILENAME=$HOME/.safrochain/config/addrbook.json
+FILEID=1OEztauAmg2vQoCzhEMLKcNaPTBLKvOrW
+FILENAME=$HOME/.xosd/config/addrbook.json
 CONFIRM=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate \
 "https://docs.google.com/uc?export=download&id=$FILEID" -O- | \
 sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1/p')
@@ -68,62 +61,56 @@ wget --load-cookies /tmp/cookies.txt \
 -O ${FILENAME}
 rm -f /tmp/cookies.txt
 
-# Configure Seed
-sed -i -e "s|^seeds *=.*|seeds = \"2242a526e7841e7e8a551aabc4614e6cd612e7fb@88.99.211.113:26656,642dfd491b8bfc0b842c71c01a12ee1122f3dafe@46.62.140.103:26656\"|" \
--e "s|^persistent_peers *=.*|persistent_peers = \"2242a526e7841e7e8a551aabc4614e6cd612e7fb@88.99.211.113:26656,642dfd491b8bfc0b842c71c01a12ee1122f3dafe@46.62.140.103:26656\"|" \
--e "s|^pex *=.*|pex = false|" $HOME/.safrochain/config/config.toml
-
 # Customize Prunning
 sed -i \
   -e 's|^pruning *=.*|pruning = "custom"|' \
   -e 's|^pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
   -e 's|^pruning-interval *=.*|pruning-interval = "20"|' \
-  $HOME/.safrochain/config/app.toml
+  $HOME/.xosd/config/app.toml
 
 # Set Minimum Gas and Disable Indexer
-sed -i -e "s|^minimum-gas-prices *=.*|minimum-gas-prices = \"0.075usaf\"|" $HOME/.safrochain/config/app.toml
-sed -i -e "s/^indexer *=.*/indexer = \"null\"/" $HOME/.safrochain/config/config.toml
+sed -i -e "s/^indexer *=.*/indexer = \"null\"/" $HOME/.xosd/config/config.toml
 
 # Enable API, gRPC, RPC
 # === [api] ===
-sed -i '/\[api\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.safrochain/config/app.toml
-sed -i '/\[api\]/,/^\[/{s/^swagger *=.*/swagger = true/}' $HOME/.safrochain/config/app.toml
-sed -i '/\[api\]/,/^\[/{s|^address *=.*|address = "tcp://0.0.0.0:'"${SAFRO_PORT}"'17"|}' $HOME/.safrochain/config/app.toml
-sed -i '/\[api\]/,/^\[/{s/^enabled-unsafe-cors *=.*/enabled-unsafe-cors = true/}' $HOME/.safrochain/config/app.toml
+sed -i '/\[api\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.xosd/config/app.toml
+sed -i '/\[api\]/,/^\[/{s/^swagger *=.*/swagger = true/}' $HOME/.xosd/config/app.toml
+sed -i '/\[api\]/,/^\[/{s|^address *=.*|address = "tcp://0.0.0.0:'"${XOS_PORT}"'17"|}' $HOME/.xosd/config/app.toml
+sed -i '/\[api\]/,/^\[/{s/^enabled-unsafe-cors *=.*/enabled-unsafe-cors = true/}' $HOME/.xosd/config/app.toml
 # === [grpc] ===
-sed -i '/\[grpc\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.safrochain/config/app.toml
-sed -i '/\[grpc\]/,/^\[/{s|^address *=.*|address = "0.0.0.0:'"${SAFRO_PORT}"'90"|}' $HOME/.safrochain/config/app.toml
+sed -i '/\[grpc\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.xosd/config/app.toml
+sed -i '/\[grpc\]/,/^\[/{s|^address *=.*|address = "0.0.0.0:'"${XOS_PORT}"'90"|}' $HOME/.xosd/config/app.toml
 # === [grpc-web] ===
-sed -i '/\[grpc-web\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.safrochain/config/app.toml
+sed -i '/\[grpc-web\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.xosd/config/app.toml
 # === [rpc] ===
-sed -i '/\[rpc\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.safrochain/config/config.toml
-sed -i '/\[rpc\]/,/^\[/{s|^laddr *=.*|laddr = "tcp://0.0.0.0:'"${SAFRO_PORT}"'657"|}' $HOME/.safrochain/config/config.toml
+sed -i '/\[rpc\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.xosd/config/config.toml
+sed -i '/\[rpc\]/,/^\[/{s|^laddr *=.*|laddr = "tcp://0.0.0.0:'"${XOS_PORT}"'657"|}' $HOME/.xosd/config/config.toml
 
 # set custom ports in app.toml
-sed -i.bak -e "s%:1317%:${SAFRO_PORT}17%g;
-s%:8080%:${SAFRO_PORT}080%g;
-s%:9090%:${SAFRO_PORT}090%g;
-s%:9091%:${SAFRO_PORT}091%g;
-s%:8545%:${SAFRO_PORT}545%g;
-s%:8546%:${SAFRO_PORT}546%g;
-s%:6065%:${SAFRO_PORT}065%g" $HOME/.safrochain/config/app.toml
+sed -i.bak -e "s%:1317%:${XOS_PORT}17%g;
+s%:8080%:${XOS_PORT}080%g;
+s%:9090%:${XOS_PORT}090%g;
+s%:9091%:${XOS_PORT}091%g;
+s%:8545%:${XOS_PORT}545%g;
+s%:8546%:${XOS_PORT}546%g;
+s%:6065%:${XOS_PORT}065%g" $HOME/.xosd/config/app.toml
 
 # set custom ports in config.toml file
-sed -i.bak -e "s%:26658%:${SAFRO_PORT}658%g;
-s%:26657%:${SAFRO_PORT}657%g;
-s%:6060%:${SAFRO_PORT}060%g;
-s%:26656%:${SAFRO_PORT}656%g;
-s%^external_address = \"\"%external_address = \"$(wget -qO- eth0.me):${SAFRO_PORT}656\"%;
-s%:26660%:${SAFRO_PORT}660%g" $HOME/.safrochain/config/config.toml
+sed -i.bak -e "s%:26658%:${XOS_PORT}658%g;
+s%:26657%:${XOS_PORT}657%g;
+s%:6060%:${XOS_PORT}060%g;
+s%:26656%:${XOS_PORT}656%g;
+s%^external_address = \"\"%external_address = \"$(wget -qO- eth0.me):${XOS_PORT}656\"%;
+s%:26660%:${XOS_PORT}660%g" $HOME/.xosd/config/config.toml
 
 # Create Service
-tee /etc/systemd/system/safrochaind.service > /dev/null <<EOF
+tee /etc/systemd/system/xosd.service > /dev/null <<EOF
 [Unit]
-Description=Safrochain testnet node
+Description=XOS testnet node
 After=network-online.target
 [Service]
 User=$USER
-ExecStart=/usr/local/bin/safrochaind start
+ExecStart=/usr/local/bin/xosd start
 Restart=always
 RestartSec=3
 LimitNOFILE=65535
@@ -134,30 +121,32 @@ EOF
 # Enable Service
 systemctl daemon-reexec
 systemctl daemon-reload
-systemctl enable safrochaind.service
+systemctl enable xosd.service
 
 # Download Snapshot
-sudo systemctl stop safrochaind
-cp $HOME/.safrochain/data/priv_validator_state.json $HOME/.safrochain/priv_validator_state.json.backup
-safrochaind tendermint unsafe-reset-all --home $HOME/.safrochain --keep-addr-book
-python3.12 -m venv gdown
+sudo systemctl stop xosd
+cp $HOME/.xosd/data/priv_validator_state.json $HOME/.xosd/priv_validator_state.json.backup
+xosd tendermint unsafe-reset-all --home $HOME/.xosd --keep-addr-book
+python3 -m venv gdown
 source gdown/bin/activate
-pip install gdown
-gdown https://drive.google.com/uc?id=1FaIm4hn6uI4YTkMsoOuyy1-U3AuQS1AV -O safrochain-snapshot.tar.lz4
+pip3 install gdown
+gdown https://drive.google.com/uc?id=1zA36x0nSKS17gVQrpPvGT-QUHBhjdQ8k -O xos-snapshot.tar.lz4
 deactivate
 rm -rf gdown/
-lz4 -dc safrochain-snapshot.tar.lz4 | tar -xf - -C $HOME/.safrochain/data
-mv $HOME/.safrochain/priv_validator_state.json.backup $HOME/.safrochain/data/priv_validator_state.json
+lz4 -dc xos-snapshot.tar.lz4 | tar -xf - -C $HOME/.xosd/data
+mv $HOME/.xosd/priv_validator_state.json.backup $HOME/.xosd/data/priv_validator_state.json
 
 # Start Service
-sudo systemctl restart safrochaind
+sudo systemctl restart xosd
 
 # Create Endpoint Domain
 read -p "Input Your Domain: (e.g provewithryd.xyz)" DOMAIN
 SSL_PATH="/etc/letsencrypt/live/$DOMAIN"
-DOMAIN_RPC="testnet-rpc-safrochain.$DOMAIN"
-DOMAIN_GRPC="testnet-grpc-safrochain.$DOMAIN"
-DOMAIN_API="testnet-rpc-safrochain.$DOMAIN"
+DOMAIN_RPC="testnet-rpc-xos.$DOMAIN"
+DOMAIN_GRPC="testnet-grpc-xos.$DOMAIN"
+DOMAIN_API="testnet-rpc-xos.$DOMAIN"
+DOMAIN_EVM="testnet-evm-rpc-xos.$DOMAIN"
+DOMAIN_WSS="testnet-wss-rpc-xos.$DOMAIN"
 
 # Create Endpoint Domain
 # === [RPC] ===
@@ -181,7 +170,7 @@ server {
     add_header 'Access-Control-Allow-Headers' 'Authorization,Accept,Origin,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
 
     location / {
-        proxy_pass http://0.0.0.0:${SAFRO_PORT}657;
+        proxy_pass http://0.0.0.0:${XOS_PORT}657;
 
         add_header Access-Control-Allow-Origin *;
         add_header Access-Control-Max-Age 3600;
@@ -222,7 +211,7 @@ server {
             return 204;
         }
 
-        proxy_pass http://0.0.0.0:${SAFRO_PORT}90;
+        proxy_pass http://0.0.0.0:${XOS_PORT}90;
 
         add_header 'Access-Control-Allow-Origin' '*';
         add_header 'Access-Control-Max-Age' 3600;
@@ -245,7 +234,7 @@ server {
     ssl_certificate_key $SSL_PATH/privkey.pem;
 
     location / {
-        proxy_pass http://0.0.0.0:${SAFRO_PORT}17;
+        proxy_pass http://0.0.0.0:${XOS_PORT}17;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -265,10 +254,100 @@ server {
 }
 EOF
 
+# === [EVM RPC]
+sudo tee /etc/nginx/sites-available/$DOMAIN_EVM.conf > /dev/null <<EOF
+server {
+    listen 80;
+    server_name $DOMAIN_EVM;
+    return 301 https://$host$request_uri;
+}
+server {
+    listen 443 ssl;
+
+    server_name $DOMAIN_EVM;
+
+    ssl_certificate $SSL_PATH/fullchain.pem;
+    ssl_certificate_key $SSL_PATH/privkey.pem;
+
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 5m;
+    ssl_ecdh_curve secp384r1;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+
+    add_header 'Access-Control-Allow-Methods' 'GET,POST,OPTIONS';
+    add_header 'Access-Control-Allow-Headers' 'Authorization,Accept,Origin,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
+
+    location / {
+        proxy_pass http://0.0.0.0:${XOS_PORT}45;
+
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Max-Age 3600;
+        add_header Access-Control-Expose-Headers Content-Length;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+EOF
+
+# === [WSS RPC] ===
+sudo tee /etc/nginx/sites-available/$DOMAIN_WSS.conf > /dev/null <<EOF
+server {
+    listen 80;
+    server_name $DOMAIN_WSS;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name $DOMAIN_WSS;
+
+    ssl_certificate $SSL_PATH/fullchain.pem;
+    ssl_certificate_key $SSL_PATH/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 5m;
+    ssl_ecdh_curve secp384r1;
+
+    ssl_stapling on;
+    ssl_stapling_verify on;
+
+    add_header Access-Control-Allow-Origin * always;
+    add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS';
+    add_header Access-Control-Allow-Headers 'Authorization,Accept,Origin,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range' always;
+    add_header Access-Control-Expose-Headers Content-Length always;
+
+    location / {
+        proxy_pass http://0.0.0.0:${XOS_PORT}46;
+        proxy_http_version 1.1;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        proxy_read_timeout 86400;
+    }
+}
+EOF
+
+
 # Enable all
 sudo ln -sf /etc/nginx/sites-available/$DOMAIN_RPC.conf /etc/nginx/sites-enabled/
 sudo ln -sf /etc/nginx/sites-available/$DOMAIN_GRPC.conf /etc/nginx/sites-enabled/
 sudo ln -sf /etc/nginx/sites-available/$DOMAIN_API.conf /etc/nginx/sites-enabled/
+sudo ln -sf /etc/nginx/sites-available/$DOMAIN_EVM.conf /etc/nginx/sites-enabled/
+sudo ln -sf /etc/nginx/sites-available/$DOMAIN_WSS.conf /etc/nginx/sites-enabled/
 
 # Reload NGINX
 sudo nginx -t && sudo systemctl reload nginx
@@ -277,3 +356,5 @@ echo -e "\n✅ Access your endpoints:"
 echo " - RPC : https://$DOMAIN_RPC"
 echo " - gRPC: https://$DOMAIN_GRPC"
 echo " - API : https://$DOMAIN_API"
+echo " - EVM : https://$DOMAIN_EVM"
+echo " - WSS : https://$DOMAIN_WSS"
