@@ -75,19 +75,19 @@ sed -i -e "s/^indexer *=.*/indexer = \"null\"/" $HOME/.xosd/config/config.toml
 # === [api] ===
 sed -i '/\[api\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.xosd/config/app.toml
 sed -i '/\[api\]/,/^\[/{s/^swagger *=.*/swagger = true/}' $HOME/.xosd/config/app.toml
-sed -i '/\[api\]/,/^\[/{s|^address *=.*|address = "tcp://0.0.0.0:'"${XOS_PORT}"'17"|}' $HOME/.xosd/config/app.toml
-sed -i '/\[api\]/,/^\[/{s/^enabled-unsafe-cors *=.*/enabled-unsafe-cors = true/}' $HOME/.xosd/config/app.toml
+#sed -i '/\[api\]/,/^\[/{s|^address *=.*|address = "tcp://0.0.0.0:'"${XOS_PORT}"'17"|}' $HOME/.xosd/config/app.toml
+#sed -i '/\[api\]/,/^\[/{s/^enabled-unsafe-cors *=.*/enabled-unsafe-cors = true/}' $HOME/.xosd/config/app.toml
 # === [grpc] ===
 sed -i '/\[grpc\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.xosd/config/app.toml
-sed -i '/\[grpc\]/,/^\[/{s|^address *=.*|address = "0.0.0.0:'"${XOS_PORT}"'90"|}' $HOME/.xosd/config/app.toml
+#sed -i '/\[grpc\]/,/^\[/{s|^address *=.*|address = "0.0.0.0:'"${XOS_PORT}"'90"|}' $HOME/.xosd/config/app.toml
 # === [grpc-web] ===
 sed -i '/\[grpc-web\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.xosd/config/app.toml
 # === [rpc] ===
 sed -i '/\[rpc\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.xosd/config/config.toml
-sed -i '/\[rpc\]/,/^\[/{s|^laddr *=.*|laddr = "tcp://0.0.0.0:'"${XOS_PORT}"'657"|}' $HOME/.xosd/config/config.toml
+#sed -i '/\[rpc\]/,/^\[/{s|^laddr *=.*|laddr = "tcp://0.0.0.0:'"${XOS_PORT}"'657"|}' $HOME/.xosd/config/config.toml
 
 # set custom ports in app.toml
-sed -i.bak -e "s%:1317%:${XOS_PORT}17%g;
+sed -i.bak -e "s%:1317%:${XOS_PORT}317%g;
 s%:8080%:${XOS_PORT}080%g;
 s%:9090%:${XOS_PORT}090%g;
 s%:9091%:${XOS_PORT}091%g;
@@ -100,8 +100,8 @@ sed -i.bak -e "s%:26658%:${XOS_PORT}658%g;
 s%:26657%:${XOS_PORT}657%g;
 s%:6060%:${XOS_PORT}060%g;
 s%:26656%:${XOS_PORT}656%g;
-s%^external_address = \"\"%external_address = \"$(wget -qO- eth0.me):${XOS_PORT}656\"%;
 s%:26660%:${XOS_PORT}660%g" $HOME/.xosd/config/config.toml
+## s%^external_address = \"\"%external_address = \"$(wget -qO- eth0.me):${XOS_PORT}656\"%;
 
 # Create Service
 tee /etc/systemd/system/xosd.service > /dev/null <<EOF
@@ -140,13 +140,13 @@ mv $HOME/.xosd/priv_validator_state.json.backup $HOME/.xosd/data/priv_validator_
 sudo systemctl restart xosd
 
 # Create Endpoint Domain
-read -p "Input Your Domain: (e.g provewithryd.xyz)" DOMAIN
+read -p "Input Your Domain: (e.g provewithryd.xyz) " DOMAIN
 SSL_PATH="/etc/letsencrypt/live/$DOMAIN"
 DOMAIN_RPC="testnet-rpc-xos.$DOMAIN"
 DOMAIN_GRPC="testnet-grpc-xos.$DOMAIN"
-DOMAIN_API="testnet-rpc-xos.$DOMAIN"
-DOMAIN_EVM="testnet-evm-rpc-xos.$DOMAIN"
-DOMAIN_WSS="testnet-wss-rpc-xos.$DOMAIN"
+DOMAIN_API="testnet-api-xos.$DOMAIN"
+DOMAIN_EVM="testnet-evm-xos.$DOMAIN"
+DOMAIN_WSS="testnet-wss-xos.$DOMAIN"
 
 # Create Endpoint Domain
 # === [RPC] ===
@@ -170,7 +170,7 @@ server {
     add_header 'Access-Control-Allow-Headers' 'Authorization,Accept,Origin,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
 
     location / {
-        proxy_pass http://0.0.0.0:${XOS_PORT}657;
+        proxy_pass http://127.0.0.1:${XOS_PORT}657;
 
         add_header Access-Control-Allow-Origin *;
         add_header Access-Control-Max-Age 3600;
@@ -211,7 +211,7 @@ server {
             return 204;
         }
 
-        proxy_pass http://0.0.0.0:${XOS_PORT}90;
+        proxy_pass http://127.0.0.1:${XOS_PORT}090;
 
         add_header 'Access-Control-Allow-Origin' '*';
         add_header 'Access-Control-Max-Age' 3600;
@@ -234,7 +234,7 @@ server {
     ssl_certificate_key $SSL_PATH/privkey.pem;
 
     location / {
-        proxy_pass http://0.0.0.0:${XOS_PORT}17;
+        proxy_pass http://127.0.0.1:${XOS_PORT}317;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -282,7 +282,7 @@ server {
     add_header 'Access-Control-Allow-Headers' 'Authorization,Accept,Origin,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
 
     location / {
-        proxy_pass http://0.0.0.0:${XOS_PORT}45;
+        proxy_pass http://127.0.0.1:${XOS_PORT}545;
 
         add_header Access-Control-Allow-Origin *;
         add_header Access-Control-Max-Age 3600;
@@ -326,7 +326,7 @@ server {
     add_header Access-Control-Expose-Headers Content-Length always;
 
     location / {
-        proxy_pass http://0.0.0.0:${XOS_PORT}46;
+        proxy_pass http://127.0.0.1:${XOS_PORT}546;
         proxy_http_version 1.1;
 
         proxy_set_header Upgrade $http_upgrade;
