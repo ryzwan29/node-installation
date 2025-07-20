@@ -82,19 +82,19 @@ sed -i -e "s/^indexer *=.*/indexer = \"null\"/" $HOME/.axoned/config/config.toml
 # === [api] ===
 sed -i '/\[api\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.axoned/config/app.toml
 sed -i '/\[api\]/,/^\[/{s/^swagger *=.*/swagger = true/}' $HOME/.axoned/config/app.toml
-sed -i '/\[api\]/,/^\[/{s|^address *=.*|address = "tcp://0.0.0.0:'"${AXONE_PORT}"'17"|}' $HOME/.axoned/config/app.toml
-sed -i '/\[api\]/,/^\[/{s/^enabled-unsafe-cors *=.*/enabled-unsafe-cors = true/}' $HOME/.axoned/config/app.toml
+#sed -i '/\[api\]/,/^\[/{s|^address *=.*|address = "tcp://0.0.0.0:'"${AXONE_PORT}"'17"|}' $HOME/.axoned/config/app.toml
+#sed -i '/\[api\]/,/^\[/{s/^enabled-unsafe-cors *=.*/enabled-unsafe-cors = true/}' $HOME/.axoned/config/app.toml
 # === [grpc] ===
 sed -i '/\[grpc\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.axoned/config/app.toml
-sed -i '/\[grpc\]/,/^\[/{s|^address *=.*|address = "0.0.0.0:'"${AXONE_PORT}"'90"|}' $HOME/.axoned/config/app.toml
+#sed -i '/\[grpc\]/,/^\[/{s|^address *=.*|address = "0.0.0.0:'"${AXONE_PORT}"'90"|}' $HOME/.axoned/config/app.toml
 # === [grpc-web] ===
 sed -i '/\[grpc-web\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.axoned/config/app.toml
 # === [rpc] ===
 sed -i '/\[rpc\]/,/^\[/{s/^enable *=.*/enable = true/}' $HOME/.axoned/config/config.toml
-sed -i '/\[rpc\]/,/^\[/{s|^laddr *=.*|laddr = "tcp://0.0.0.0:'"${AXONE_PORT}"'657"|}' $HOME/.axoned/config/config.toml
+#sed -i '/\[rpc\]/,/^\[/{s|^laddr *=.*|laddr = "tcp://0.0.0.0:'"${AXONE_PORT}"'657"|}' $HOME/.axoned/config/config.toml
 
 # set custom ports in app.toml
-sed -i.bak -e "s%:1317%:${AXONE_PORT}17%g;
+sed -i.bak -e "s%:1317%:${AXONE_PORT}317%g;
 s%:8080%:${AXONE_PORT}080%g;
 s%:9090%:${AXONE_PORT}090%g;
 s%:9091%:${AXONE_PORT}091%g;
@@ -151,7 +151,7 @@ read -p "Input Your Domain: (e.g provewithryd.xyz)" DOMAIN
 SSL_PATH="/etc/letsencrypt/live/$DOMAIN"
 DOMAIN_RPC="rpc-axone.$DOMAIN"
 DOMAIN_GRPC="grpc-axone.$DOMAIN"
-DOMAIN_API="rpc-axone.$DOMAIN"
+DOMAIN_API="api-axone.$DOMAIN"
 
 # Create Endpoint Domain
 # === [RPC] ===
